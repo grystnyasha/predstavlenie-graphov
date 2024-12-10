@@ -1,0 +1,167 @@
+from abc import ABC, abstractmethod
+
+
+# Базовый класс Graph (интерфейс)
+class Graph(ABC):
+    @abstractmethod
+    def add_vertex(self, vertex):
+        pass
+
+    @abstractmethod
+    def add_edge(self, u, v, weight):
+        pass
+
+    @abstractmethod
+    def remove_vertex(self, vertex):
+        pass
+
+    @abstractmethod
+    def remove_edge(self, u, v):
+        pass
+
+    @abstractmethod
+    def get_neighbors(self, vertex):
+        pass
+
+
+# Реализация через список рёбер
+class EdgeList(Graph):
+    def __init__(self):
+        self.vertices = set()
+        self.edges = []
+
+    def add_vertex(self, vertex):
+        self.vertices.add(vertex)
+
+    def add_edge(self, u, v, weight):
+        self.edges.append((u, v, weight))
+
+    def remove_vertex(self, vertex):
+        self.vertices.discard(vertex)
+        self.edges = [edge for edge in self.edges if edge[0] != vertex and edge[1] != vertex]
+
+    def remove_edge(self, u, v):
+        self.edges = [edge for edge in self.edges if not (edge[0] == u and edge[1] == v)]
+
+    def get_neighbors(self, vertex):
+        return [(v, weight) for u, v, weight in self.edges if u == vertex]
+
+
+# Реализация через список дуг
+class ArcList(Graph):
+    def __init__(self):
+        self.vertices = set()
+        self.arcs = []
+
+    def add_vertex(self, vertex):
+        self.vertices.add(vertex)
+
+    def add_edge(self, u, v, weight):
+        self.arcs.append((u, v, weight))
+
+    def remove_vertex(self, vertex):
+        self.vertices.discard(vertex)
+        self.arcs = [arc for arc in self.arcs if arc[0] != vertex and arc[1] != vertex]
+
+    def remove_edge(self, u, v):
+        self.arcs = [arc for arc in self.arcs if not (arc[0] == u and arc[1] == v)]
+
+    def get_neighbors(self, vertex):
+        return [(v, weight) for u, v, weight in self.arcs if u == vertex]
+
+
+# Реализация через список смежности
+class AdjacencyList(Graph):
+    def __init__(self):
+        self.adjacency_list = {}
+
+    def add_vertex(self, vertex):
+        if vertex not in self.adjacency_list:
+            self.adjacency_list[vertex] = []
+
+    def add_edge(self, u, v, weight):
+        if u in self.adjacency_list:
+            self.adjacency_list[u].append((v, weight))
+
+    def remove_vertex(self, vertex):
+        if vertex in self.adjacency_list:
+            del self.adjacency_list[vertex]
+        for neighbors in self.adjacency_list.values():
+            neighbors[:] = [(v, w) for v, w in neighbors if v != vertex]
+
+    def remove_edge(self, u, v):
+        if u in self.adjacency_list:
+            self.adjacency_list[u] = [(vertex, weight) for vertex, weight in self.adjacency_list[u] if vertex != v]
+
+    def get_neighbors(self, vertex):
+        return self.adjacency_list.get(vertex, [])
+
+
+# Реализация через список пучков дуг
+class ArcBundleList(Graph):
+    def __init__(self):
+        self.bundles = {}
+
+    def add_vertex(self, vertex):
+        if vertex not in self.bundles:
+            self.bundles[vertex] = []
+
+    def add_edge(self, u, v, weight):
+        if u in self.bundles:
+            self.bundles[u].append((v, weight))
+
+    def remove_vertex(self, vertex):
+        if vertex in self.bundles:
+            del self.bundles[vertex]
+        for neighbors in self.bundles.values():
+            neighbors[:] = [(v, w) for v, w in neighbors if v != vertex]
+
+    def remove_edge(self, u, v):
+        if u in self.bundles:
+            self.bundles[u] = [(vertex, weight) for vertex, weight in self.bundles[u] if vertex != v]
+
+    def get_neighbors(self, vertex):
+        return self.bundles.get(vertex, [])
+
+
+# Пример использования
+def main():
+    print("Работа со списком рёбер:")
+    graph1 = EdgeList()
+    graph1.add_vertex(0)
+    graph1.add_vertex(1)
+    graph1.add_edge(0, 1, 10)
+    print("Соседи вершины 0:", graph1.get_neighbors(0))
+    graph1.remove_edge(0, 1)
+    print("Соседи вершины 0 после удаления ребра:", graph1.get_neighbors(0))
+
+    print("\nРабота со списком дуг:")
+    graph2 = ArcList()
+    graph2.add_vertex(0)
+    graph2.add_vertex(1)
+    graph2.add_edge(0, 1, 15)
+    print("Соседи вершины 0:", graph2.get_neighbors(0))
+    graph2.remove_vertex(1)
+    print("Граф после удаления вершины 1:", graph2.get_neighbors(0))
+
+    print("\nРабота со списком смежности:")
+    graph3 = AdjacencyList()
+    graph3.add_vertex(0)
+    graph3.add_vertex(1)
+    graph3.add_edge(0, 1, 20)
+    print("Соседи вершины 0:", graph3.get_neighbors(0))
+    graph3.remove_edge(0, 1)
+    print("Соседи вершины 0 после удаления ребра:", graph3.get_neighbors(0))
+
+    print("\nРабота со списком пучков дуг:")
+    graph4 = ArcBundleList()
+    graph4.add_vertex(0)
+    graph4.add_vertex(1)
+    graph4.add_edge(0, 1, 25)
+    print("Соседи вершины 0:", graph4.get_neighbors(0))
+    graph4.remove_vertex(1)
+    print("Граф после удаления вершины 1:", graph4.get_neighbors(0))
+
+
+if __name__ == "__main__":
+    main()
